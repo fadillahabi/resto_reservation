@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:ppkd_flutter/constant/app_color.dart';
+import 'package:ppkd_flutter/view/main_screen.dart';
 import 'package:ppkd_flutter/view/register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -15,49 +16,61 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColor.blackMain,
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Center(
-            child: Column(
-              children: [
-                SizedBox(height: 128),
-                Text(
-                  "Welcome Back !",
-                  style: TextStyle(color: Colors.white, fontSize: 28),
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 48),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 40),
+              Text(
+                "Welcome Back!",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
                 ),
-                SizedBox(height: 8),
-                Text(
-                  "Please login to your account",
-                  style: TextStyle(color: Colors.white, fontSize: 12),
-                ),
-                SizedBox(height: 100),
-                buildTextField(label: "Email"),
-                SizedBox(height: 24),
-                buildTextField(label: "Password"),
-                SizedBox(height: 300),
-                SizedBox(
-                  width: 256,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColor.blackButton,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Text(
-                      'LOGIN',
-                      style: TextStyle(fontSize: 16, color: Colors.white),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "Please login to your account",
+                style: TextStyle(color: Colors.white70, fontSize: 14),
+              ),
+              const SizedBox(height: 64),
+              buildTextField(label: "Email"),
+              const SizedBox(height: 24),
+              buildTextField(label: "Password", obscureText: true),
+              const SizedBox(height: 40),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      MainScreen.id, // ganti dengan nama route screen tujuan
+                      (route) => false, // menghapus semua route sebelumnya
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColor.blackButton,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
+                  child: const Text(
+                    'LOGIN',
+                    style: TextStyle(fontSize: 16, color: Colors.white),
+                  ),
                 ),
-                SizedBox(height: 28),
-                Text.rich(
+              ),
+              const SizedBox(height: 32),
+              Center(
+                child: Text.rich(
                   TextSpan(
                     children: [
-                      TextSpan(
+                      const TextSpan(
                         text: "Don't have an account?",
                         style: TextStyle(color: Colors.white),
                       ),
@@ -73,7 +86,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => RegisterScreen(),
+                                    builder:
+                                        (context) => const RegisterScreen(),
                                   ),
                                 );
                               },
@@ -81,8 +95,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -93,16 +107,17 @@ class _LoginScreenState extends State<LoginScreen> {
 Widget buildTextField({required String label, bool obscureText = false}) {
   return TextFormField(
     obscureText: obscureText,
-    style: TextStyle(color: Colors.white), // warna teks input
+    style: const TextStyle(color: Colors.white),
     decoration: InputDecoration(
       labelText: label,
-      labelStyle: TextStyle(color: Colors.grey, fontSize: 14),
-      fillColor: AppColor.blackField,
+      labelStyle: const TextStyle(color: Colors.grey, fontSize: 14),
       filled: true,
+      fillColor: AppColor.blackField,
       border: OutlineInputBorder(
         borderSide: BorderSide.none,
         borderRadius: BorderRadius.circular(26),
       ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
     ),
   );
 }
