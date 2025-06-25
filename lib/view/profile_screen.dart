@@ -14,41 +14,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text("Profile"),
-        centerTitle: true,
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.settings)),
-        ],
+        backgroundColor: Colors.grey[100],
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: Icon(Icons.arrow_back_ios),
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           // Header Member Info
-          Row(
+          Column(
+            // mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const CircleAvatar(
-                radius: 30,
+                radius: 40,
                 backgroundColor: Colors.grey,
-                child: Icon(Icons.person, size: 30, color: Colors.white),
+                child: Icon(Icons.person, size: 40, color: Colors.white),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(height: 16),
               Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                // crossAxisAlignment: CrossAxisAlignment.start,
                 children: const [
                   Text(
                     "Abi",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 26),
                   ),
-                  Text("SILVER MEMBER", style: TextStyle(color: Colors.grey)),
+                  Text("abi@gmail.com", style: TextStyle(color: Colors.grey)),
                 ],
               ),
             ],
           ),
           const SizedBox(height: 16),
-
-          // Kartu Poin
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -59,12 +58,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: const [
                 Text(
-                  "HIRO CLUB",
+                  "PESAN MEJA CLUB",
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 10),
                 Text(
-                  "500 Hiro Points",
+                  "500 Poin",
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 10),
@@ -76,60 +75,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           const SizedBox(height: 24),
-
-          // Membership Section
-          const Text(
-            "MEMBERSHIP",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          ListView(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            children: [
+              ExpansionTile(
+                title: Text("Histori pesanan meja"),
+                children: [
+                  ListTile(
+                    leading: Icon(Icons.event_seat),
+                    title: Text("data"),
+                    subtitle: Text("data"),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.event_seat),
+                    title: Text("data"),
+                    subtitle: Text("data"),
+                  ),
+                ],
+              ),
+              ExpansionTile(
+                title: Text("Histori pesanan makanan"),
+                children: [
+                  ListTile(
+                    leading: Icon(Icons.event_seat),
+                    title: Text("data"),
+                    subtitle: Text("data"),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.event_seat),
+                    title: Text("data"),
+                    subtitle: Text("data"),
+                  ),
+                ],
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-          _menuItem("Benefit", Icons.card_giftcard),
-          _menuItem("Point History", Icons.history),
-          _menuItem("Gift Code", Icons.redeem),
-          _menuItem("Mission", Icons.flag),
-
-          const SizedBox(height: 24),
-
-          // General Section
-          const Text(
-            "GENERAL",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-          ),
-          const SizedBox(height: 8),
-          _menuItem("Contact Us", Icons.phone),
-          _menuItem("Terms & Conditions", Icons.description),
-          _menuItem("Privacy Policy", Icons.lock),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 4,
-        selectedItemColor: Colors.brown,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.explore), label: "Explore"),
-          BottomNavigationBarItem(icon: Icon(Icons.history), label: "History"),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.card_giftcard),
-            label: "Rewards",
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-        ],
-      ),
-    );
-  }
-
-  Widget _menuItem(String title, IconData icon) {
-    return Column(
-      children: [
-        ListTile(
-          leading: Icon(icon, color: Colors.brown),
-          title: Text(title),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-          onTap: () {},
-        ),
-        const Divider(height: 1),
-      ],
     );
   }
 }

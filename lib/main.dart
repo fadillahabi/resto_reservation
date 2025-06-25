@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ppkd_flutter/constant/app_color.dart';
+import 'package:ppkd_flutter/view/choose_screen.dart';
 import 'package:ppkd_flutter/view/login_screen.dart';
 import 'package:ppkd_flutter/view/main_screen.dart';
 import 'package:ppkd_flutter/view/profile_screen.dart';
@@ -26,6 +27,7 @@ class MyApp extends StatelessWidget {
         WelcomeScreen.id: (context) => WelcomeScreen(),
         MainScreen.id: (context) => MainScreen(),
         ProfileScreen.id: (context) => ProfileScreen(),
+        ChooseScreen.id: (context) => ChooseScreen(),
       },
       title: 'Resto Reservation',
       theme: ThemeData(

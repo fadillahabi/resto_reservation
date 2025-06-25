@@ -1,3 +1,4 @@
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:ppkd_flutter/constant/app_color.dart';
 import 'package:ppkd_flutter/view/profile_screen.dart';
@@ -18,15 +19,12 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent, // penting agar gradient terlihat
+      backgroundColor: Colors.transparent,
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              AppColor.blackMain, // warna atas
-              Colors.white, // warna bawah
-            ],
-            begin: Alignment.topCenter,
+            colors: [AppColor.blackMain, Colors.white],
+            begin: Alignment.center,
             end: Alignment.bottomCenter,
           ),
         ),
@@ -50,14 +48,19 @@ class _MainScreenState extends State<MainScreen> {
   }
 }
 
-class MainContent extends StatelessWidget {
+class MainContent extends StatefulWidget {
   const MainContent({super.key});
 
+  @override
+  State<MainContent> createState() => _MainContentState();
+}
+
+class _MainContentState extends State<MainContent> {
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // AppBar manual (bukan Scaffold)
+        // AppBar manual
         Container(
           padding: const EdgeInsets.only(
             top: 40,
@@ -70,21 +73,21 @@ class MainContent extends StatelessWidget {
             children: [
               const CircleAvatar(
                 backgroundColor: Colors.grey,
-                child: Text("H"),
+                child: Icon(Icons.person),
               ),
               const SizedBox(width: 10),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: const [
                   Text(
-                    "HI, ABI",
+                    "HAI, ABI",
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
-                    "500 Hiro Points",
+                    "abi@gmail.com",
                     style: TextStyle(color: Colors.white70, fontSize: 12),
                   ),
                 ],
@@ -95,38 +98,40 @@ class MainContent extends StatelessWidget {
           ),
         ),
 
+        // CarouselSlider
+        CarouselSlider(
+          options: CarouselOptions(
+            height: 250,
+            autoPlay: true,
+            enlargeCenterPage: true,
+            viewportFraction: 1,
+            autoPlayInterval: const Duration(seconds: 3),
+          ),
+          items:
+              const [
+                "assets/images/restaurant4.jpg",
+                "assets/images/restaurant5.jpg",
+                "assets/images/food3.jpg",
+              ].map((imagePath) {
+                return Builder(
+                  builder: (BuildContext context) {
+                    return CarouselImage(imagePath);
+                  },
+                );
+              }).toList(),
+        ),
+
         // Body Content
         Expanded(
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Banner Promo
                 Container(
-                  margin: const EdgeInsets.all(12),
-                  height: 200,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    image: const DecorationImage(
-                      image: NetworkImage("https://image-url-banner"),
-                      fit: BoxFit.cover,
-                    ),
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 12,
                   ),
-                  alignment: Alignment.bottomLeft,
-                  padding: const EdgeInsets.all(10),
-                  child: const Text(
-                    "Truffle Hiro Niku Don\n110K",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-
-                // Birthday Reward
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 12),
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -146,19 +151,27 @@ class MainContent extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
-
-                // Explore Our Brand
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: const [
                       Text(
-                        "EXPLORE OUR BRAND",
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        "JELAJAHI RESTORAN FAVORITMU",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                      Text("SEE ALL", style: TextStyle(color: Colors.brown)),
+                      Text(
+                        "LAINNYA",
+                        style: TextStyle(
+                          color: Colors.brown,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -169,26 +182,33 @@ class MainContent extends StatelessWidget {
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     children: const [
-                      BrandCard("Sushi Hiro", "https://url1.com"),
-                      BrandCard("Sushi Go!", "https://url2.com"),
-                      BrandCard("Beef Boss", "https://url3.com"),
+                      BrandCard("Sushi Hiro", "assets/images/food3.jpg"),
+                      BrandCard("Sushi Go!", "assets/images/food3.jpg"),
+                      BrandCard("Beef Boss", "assets/images/food3.jpg"),
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
-                // Featured Rewards
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: const [
                       Text(
-                        "FEATURED REWARDS",
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        "PESAN MAKANAN",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                      Text("SEE ALL", style: TextStyle(color: Colors.brown)),
+                      Text(
+                        "LAINNYA",
+                        style: TextStyle(
+                          color: Colors.brown,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -199,8 +219,8 @@ class MainContent extends StatelessWidget {
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     children: const [
-                      RewardCard("Dessert Reward", "https://dessertimage.com"),
-                      RewardCard("Truffle Niku Don", "https://nikuimage.com"),
+                      RewardCard("Dessert Reward", "assets/images/food3.jpg"),
+                      RewardCard("Truffle Niku Don", "assets/images/food3.jpg"),
                     ],
                   ),
                 ),
@@ -214,6 +234,26 @@ class MainContent extends StatelessWidget {
   }
 }
 
+// Carousel Image Widget
+class CarouselImage extends StatelessWidget {
+  final String assetPath;
+
+  const CarouselImage(this.assetPath, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        image: DecorationImage(image: AssetImage(assetPath), fit: BoxFit.cover),
+      ),
+    );
+  }
+}
+
+// Brand Card
 class BrandCard extends StatelessWidget {
   final String title;
   final String imageUrl;
@@ -227,10 +267,7 @@ class BrandCard extends StatelessWidget {
       margin: const EdgeInsets.only(right: 12),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        image: DecorationImage(
-          image: NetworkImage(imageUrl),
-          fit: BoxFit.cover,
-        ),
+        image: DecorationImage(image: AssetImage(imageUrl), fit: BoxFit.cover),
       ),
       alignment: Alignment.bottomLeft,
       padding: const EdgeInsets.all(8),
@@ -245,6 +282,7 @@ class BrandCard extends StatelessWidget {
   }
 }
 
+// Reward Card
 class RewardCard extends StatelessWidget {
   final String title;
   final String imageUrl;
@@ -258,10 +296,7 @@ class RewardCard extends StatelessWidget {
       margin: const EdgeInsets.only(right: 12),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        image: DecorationImage(
-          image: NetworkImage(imageUrl),
-          fit: BoxFit.cover,
-        ),
+        image: DecorationImage(image: AssetImage(imageUrl), fit: BoxFit.cover),
       ),
     );
   }

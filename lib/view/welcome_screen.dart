@@ -17,21 +17,21 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     {
       'image1': 'assets/images/food.jpg',
       'image2': 'assets/images/restaurant.jpg',
-      'title': 'Plan your weekly menu',
+      'title': 'Rencanakan menu mingguan Anda',
       'desc':
-          "You can order weekly meals, and we'll bring them straight to your door.",
+          "Anda bisa memesan makanan mingguan, dan kami akan mengantarkannya langsung ke meja Anda.",
     },
     {
       'image1': 'assets/images/restaurant2.jpg',
       'image2': 'assets/images/infront.jpg',
-      'title': 'Reserve a table',
-      'desc': "Tired of having to wait? Make a table reservation right away.",
+      'title': 'Reservasi meja',
+      'desc': "Lelah harus menunggu? Segera lakukan reservasi meja.",
     },
     {
       'image1': 'assets/images/food2.jpg',
       'image2': 'assets/images/restaurant3.jpg',
-      'title': 'Try new dishes',
-      'desc': "Explore different cuisines and surprise your taste buds.",
+      'title': 'Coba hidangan baru',
+      'desc': "Jelajahi berbagai masakan dan kejutkan indra perasa Anda.",
     },
   ];
 
