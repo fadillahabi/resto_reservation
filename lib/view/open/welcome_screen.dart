@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ppkd_flutter/view/login_screen.dart';
+import 'package:ppkd_flutter/view/login_register/login_screen.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});

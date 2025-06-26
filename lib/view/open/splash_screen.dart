@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ppkd_flutter/view/welcome_screen.dart';
+import 'package:ppkd_flutter/view/open/welcome_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -65,7 +65,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 // ),
                 Positioned.fill(
                   child: Image.asset(
-                    ('assets/images/logo.png'), // Gunakan banner landscape
+                    ('assets/images/logo2.png'), // Gunakan banner landscape
                     fit: BoxFit.cover, // Pastikan gambar menutupi seluruh area
                   ),
                 ),

@@ -1,6 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-class PreferenceHandlerGhibli {
+class PreferenceHandlerPM {
   static const String _loginKey = "login";
   static const String _tokenKey = "token";
 

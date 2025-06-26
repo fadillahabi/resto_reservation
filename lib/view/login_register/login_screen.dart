@@ -2,54 +2,25 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:ppkd_flutter/api/user_api.dart';
 import 'package:ppkd_flutter/constant/app_color.dart';
-import 'package:ppkd_flutter/view/login_screen.dart';
+import 'package:ppkd_flutter/view/login_register/register_screen.dart';
+import 'package:ppkd_flutter/view/open/choose_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
-  static const String id = "/register_screen";
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+  static const String id = "/login_screen";
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _LoginScreenState extends State<LoginScreen> {
   final UserServicePM userServicePM = UserServicePM();
-  bool isVisibility = false;
   bool isLoading = false;
-  final TextEditingController nameController = TextEditingController();
+  bool isVisibility = false;
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-
-  void register() async {
-    setState(() {
-      isLoading = true;
-    });
-    final res = await userServicePM.registerUser(
-      email: emailController.text,
-      name: nameController.text,
-      password: passwordController.text,
-    );
-    if (res["data"] != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Registration Berhasil!"),
-          backgroundColor: Colors.green,
-        ),
-      );
-      Navigator.pop(context);
-    } else if (res["errors"] != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Maaf, ${res["message"]}"),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-    setState(() {
-      isLoading = false;
-    });
-  }
+  final _formkey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -59,13 +30,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 48),
           child: Form(
-            key: _formKey,
+            key: _formkey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 40),
                 Text(
-                  "Yuk, Buat Akun!",
+                  "Selamat Datang kembali!",
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 28,
@@ -74,32 +45,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  "Silakan isi formulir untuk melanjutkan",
+                  "Silakan masuk ke akun Anda",
                   style: TextStyle(color: Colors.white70, fontSize: 14),
                 ),
-                const SizedBox(height: 48),
-                TextFormField(
-                  controller: nameController,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    labelText: "Nama Lengkap",
-                    labelStyle: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 14,
-                    ),
-                    filled: true,
-                    fillColor: AppColor.blackField,
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide.none,
-                      borderRadius: BorderRadius.circular(26),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 16,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 64),
                 TextFormField(
                   controller: emailController,
                   style: const TextStyle(color: Colors.white),
@@ -121,7 +70,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
                 TextFormField(
                   controller: passwordController,
                   obscureText: !isVisibility,
@@ -138,10 +87,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       borderSide: BorderSide.none,
                       borderRadius: BorderRadius.circular(26),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 16,
-                    ),
                     suffixIcon: IconButton(
                       icon: Icon(
                         isVisibility ? Icons.visibility : Icons.visibility_off,
@@ -152,6 +97,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         });
                       },
                     ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 16,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 40),
@@ -159,12 +108,43 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        print("Email: ${emailController.text}");
-                        print("Name: ${nameController.text}");
-                        print("Password: ${passwordController.text}");
-                        register();
+                    onPressed: () async {
+                      if (_formkey.currentState!.validate()) {
+                        setState(() => isLoading = true);
+
+                        final result = await userServicePM.loginUser(
+                          email: emailController.text,
+                          password: passwordController.text,
+                        );
+
+                        setState(() => isLoading = false);
+
+                        if (result['data'] != null) {
+                          final token = result['data']['token'];
+
+                          SharedPreferences prefs =
+                              await SharedPreferences.getInstance();
+                          await prefs.setString('token', token);
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("Login Berhasil!"),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                          Navigator.pushNamedAndRemoveUntil(
+                            context,
+                            ChooseScreen.id,
+                            (route) => false,
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(result['message'] ?? 'Login Gagal'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -173,10 +153,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text(
-                      'DAFTAR',
-                      style: TextStyle(fontSize: 16, color: Colors.white),
-                    ),
+                    child:
+                        isLoading
+                            ? CircularProgressIndicator(color: Colors.white)
+                            : Text(
+                              "MASUK",
+                              style: TextStyle(color: Colors.white),
+                            ),
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -185,22 +168,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     TextSpan(
                       children: [
                         const TextSpan(
-                          text: "Sudah memiliki akun?",
+                          text: "Belum punya akun?",
                           style: TextStyle(color: Colors.white),
                         ),
                         TextSpan(
-                          text: '  Login',
-                          style: const TextStyle(
+                          text: '  Daftar',
+                          style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.red,
                           ),
                           recognizer:
                               TapGestureRecognizer()
                                 ..onTap = () {
-                                  Navigator.pushReplacement(
+                                  Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => const LoginScreen(),
+                                      builder:
+                                          (context) => const RegisterScreen(),
                                     ),
                                   );
                                 },

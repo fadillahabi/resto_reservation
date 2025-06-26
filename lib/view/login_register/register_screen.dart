@@ -2,25 +2,54 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:ppkd_flutter/api/user_api.dart';
 import 'package:ppkd_flutter/constant/app_color.dart';
-import 'package:ppkd_flutter/view/choose_screen.dart';
-import 'package:ppkd_flutter/view/register_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ppkd_flutter/view/login_register/login_screen.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
-  static const String id = "/login_screen";
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
+  static const String id = "/register_screen";
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
   final UserServicePM userServicePM = UserServicePM();
-  bool isLoading = false;
   bool isVisibility = false;
+  bool isLoading = false;
+  final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final _formkey = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
+
+  void register() async {
+    setState(() {
+      isLoading = true;
+    });
+    final res = await userServicePM.registerUser(
+      email: emailController.text,
+      name: nameController.text,
+      password: passwordController.text,
+    );
+    if (res["data"] != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Registration Berhasil!"),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.pop(context);
+    } else if (res["errors"] != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Maaf, ${res["message"]}"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+    setState(() {
+      isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,13 +59,13 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 48),
           child: Form(
-            key: _formkey,
+            key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 40),
                 Text(
-                  "Selamat Datang kembali!",
+                  "Yuk, Buat Akun!",
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 28,
@@ -45,10 +74,32 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  "Silakan masuk ke akun Anda",
+                  "Silakan isi formulir untuk melanjutkan",
                   style: TextStyle(color: Colors.white70, fontSize: 14),
                 ),
-                const SizedBox(height: 64),
+                const SizedBox(height: 48),
+                TextFormField(
+                  controller: nameController,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    labelText: "Nama Lengkap",
+                    labelStyle: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: 14,
+                    ),
+                    filled: true,
+                    fillColor: AppColor.blackField,
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide.none,
+                      borderRadius: BorderRadius.circular(26),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 16,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
                 TextFormField(
                   controller: emailController,
                   style: const TextStyle(color: Colors.white),
@@ -70,7 +121,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 TextFormField(
                   controller: passwordController,
                   obscureText: !isVisibility,
@@ -87,6 +138,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderSide: BorderSide.none,
                       borderRadius: BorderRadius.circular(26),
                     ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 16,
+                    ),
                     suffixIcon: IconButton(
                       icon: Icon(
                         isVisibility ? Icons.visibility : Icons.visibility_off,
@@ -97,10 +152,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         });
                       },
                     ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 16,
-                    ),
                   ),
                 ),
                 const SizedBox(height: 40),
@@ -108,43 +159,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: () async {
-                      if (_formkey.currentState!.validate()) {
-                        setState(() => isLoading = true);
-
-                        final result = await userServicePM.loginUser(
-                          email: emailController.text,
-                          password: passwordController.text,
-                        );
-
-                        setState(() => isLoading = false);
-
-                        if (result['data'] != null) {
-                          final token = result['data']['token'];
-
-                          SharedPreferences prefs =
-                              await SharedPreferences.getInstance();
-                          await prefs.setString('token', token);
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text("Login Berhasil!"),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
-                          Navigator.pushNamedAndRemoveUntil(
-                            context,
-                            ChooseScreen.id,
-                            (route) => false,
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(result['message'] ?? 'Login Gagal'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                        }
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        print("Email: ${emailController.text}");
+                        print("Name: ${nameController.text}");
+                        print("Password: ${passwordController.text}");
+                        register();
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -153,13 +173,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child:
-                        isLoading
-                            ? CircularProgressIndicator(color: Colors.white)
-                            : Text(
-                              "MASUK",
-                              style: TextStyle(color: Colors.white),
-                            ),
+                    child: const Text(
+                      'DAFTAR',
+                      style: TextStyle(fontSize: 16, color: Colors.white),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -168,23 +185,22 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextSpan(
                       children: [
                         const TextSpan(
-                          text: "Belum punya akun?",
+                          text: "Sudah memiliki akun?",
                           style: TextStyle(color: Colors.white),
                         ),
                         TextSpan(
-                          text: '  Daftar',
-                          style: TextStyle(
+                          text: '  Login',
+                          style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.red,
                           ),
                           recognizer:
                               TapGestureRecognizer()
                                 ..onTap = () {
-                                  Navigator.push(
+                                  Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
-                                      builder:
-                                          (context) => const RegisterScreen(),
+                                      builder: (context) => const LoginScreen(),
                                     ),
                                   );
                                 },

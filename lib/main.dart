@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:ppkd_flutter/constant/app_color.dart';
-import 'package:ppkd_flutter/view/choose_screen.dart';
-import 'package:ppkd_flutter/view/login_screen.dart';
-import 'package:ppkd_flutter/view/main_screen.dart';
-import 'package:ppkd_flutter/view/profile_screen.dart';
-import 'package:ppkd_flutter/view/register_screen.dart';
-import 'package:ppkd_flutter/view/splash_screen.dart';
-import 'package:ppkd_flutter/view/welcome_screen.dart';
+import 'package:ppkd_flutter/view/login_register/login_screen.dart';
+import 'package:ppkd_flutter/view/login_register/register_screen.dart';
+import 'package:ppkd_flutter/view/main/main_screen.dart';
+import 'package:ppkd_flutter/view/main/profile_screen.dart';
+import 'package:ppkd_flutter/view/open/choose_screen.dart';
+import 'package:ppkd_flutter/view/open/splash_screen.dart';
+import 'package:ppkd_flutter/view/open/welcome_screen.dart';
 
 void main() {
   runApp(const MyApp());
