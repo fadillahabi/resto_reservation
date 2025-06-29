@@ -29,7 +29,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       try {
         return await UserServicePM().getProfile(token);
       } catch (e) {
-        debugPrint('Gagal memuat profile: $e');
+        debugPrint('Gagal memuat profile: \$e');
       }
     }
     return null;
@@ -38,38 +38,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _editProfileDialog(ProfileResponse profile) async {
     final nameController = TextEditingController(text: profile.name);
     final token = await PreferenceHandlerPM.getToken();
-
     if (token == null) return;
 
     await showDialog(
       context: context,
       builder:
           (_) => AlertDialog(
-            backgroundColor: AppColor.blackField,
+            backgroundColor: Colors.grey[900],
             title: const Text(
               'Edit Profil',
               style: TextStyle(color: Colors.white),
             ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: nameController,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    labelText: "Nama",
-                    labelStyle: const TextStyle(color: Colors.white70),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white30),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.blueAccent),
-                    ),
-                    filled: true,
-                    fillColor: AppColor.cardDark,
-                  ),
+            content: TextField(
+              controller: nameController,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: "Nama",
+                labelStyle: const TextStyle(color: Colors.white70),
+                filled: true,
+                fillColor: Colors.grey[800],
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
                 ),
-              ],
+              ),
             ),
             actions: [
               TextButton(
@@ -102,11 +94,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueAccent,
+                  backgroundColor: Colors.tealAccent[700],
                 ),
                 child: const Text(
                   'Simpan',
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(color: Colors.black),
                 ),
               ),
             ],
@@ -116,153 +108,200 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final media = MediaQuery.of(context).size;
+
     return Scaffold(
-      backgroundColor: AppColor.blackMain,
-      body: FutureBuilder<ProfileResponse?>(
-        future: _profileFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (!snapshot.hasData || snapshot.data == null) {
-            return const Center(
-              child: Text(
-                "Gagal memuat data.",
-                style: TextStyle(color: Colors.white),
-              ),
-            );
-          }
-
-          final profile = snapshot.data!;
-
-          return SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 60),
-            child: Column(
-              children: [
-                const CircleAvatar(
-                  radius: 50,
-                  backgroundColor: Colors.white,
-                  child: Icon(Icons.person, size: 50, color: Colors.blueGrey),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF0D0D0D), Color(0xFF1A1A1A)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: FutureBuilder<ProfileResponse?>(
+          future: _profileFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              );
+            }
+            if (!snapshot.hasData || snapshot.data == null) {
+              return const Center(
+                child: Text(
+                  "Gagal memuat data.",
+                  style: TextStyle(color: Colors.white),
                 ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+              );
+            }
+
+            final profile = snapshot.data!;
+            return SafeArea(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(
+                  horizontal: media.width * 0.06,
+                  vertical: 24,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Flexible(
-                      child: Text(
-                        profile.name,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 24,
-                          color: Colors.white,
-                        ),
-                        overflow: TextOverflow.ellipsis,
+                    CircleAvatar(
+                      radius: media.width * 0.16,
+                      backgroundColor: Colors.white,
+                      child: Icon(
+                        Icons.person,
+                        size: media.width * 0.14,
+                        color: Colors.teal,
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(
-                        Icons.edit,
-                        size: 20,
-                        color: Colors.white,
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            profile.name,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: media.width * 0.06,
+                              color: Colors.white,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.edit, color: Colors.white),
+                          onPressed: () => _editProfileDialog(profile),
+                        ),
+                      ],
+                    ),
+                    Text(
+                      profile.email,
+                      style: const TextStyle(color: Colors.grey),
+                    ),
+                    const SizedBox(height: 36),
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Riwayat",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                      onPressed: () => _editProfileDialog(profile),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildHistorySection(),
+                    const SizedBox(height: 36),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+                          PreferenceHandlerPM.deleteLogin();
+                          if (!mounted) return;
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const LoginScreen(),
+                            ),
+                            (route) => false,
+                          );
+                        },
+                        icon: const Icon(Icons.logout, color: Colors.white),
+                        label: const Text(
+                          "Keluar",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.redAccent,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 16,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 6,
+                          shadowColor: Colors.redAccent.withOpacity(0.4),
+                        ),
+                      ),
                     ),
                   ],
                 ),
-                Text(profile.email, style: const TextStyle(color: Colors.grey)),
-                const SizedBox(height: 24),
-                _buildHistorySection(),
-                const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Row(
-                    // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        "Keluar",
-                        style: TextStyle(color: Colors.white, fontSize: 16),
-                      ),
-                      Spacer(),
-                      IconButton(
-                        onPressed: () async {
-                          PreferenceHandlerPM.deleteLogin();
-                          Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(builder: (_) => LoginScreen()),
-                            (Route<dynamic> route) => false,
-                          );
-                        },
-                        icon: const Icon(
-                          Icons.exit_to_app,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
+              ),
+            );
+          },
+        ),
       ),
     );
   }
 
   Widget _buildHistorySection() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Card(
-          color: AppColor.blackField,
-          elevation: 2,
-          margin: const EdgeInsets.only(bottom: 12),
-          child: ExpansionTile(
-            title: const Text(
-              "Histori Pesanan Meja",
-              style: TextStyle(color: Colors.white),
+        _buildExpansionTile(
+          title: "Histori Pesanan Meja",
+          icon: Icons.event_seat,
+          children: const [
+            ListTile(
+              leading: Icon(Icons.chair, color: Colors.white),
+              title: Text(
+                "Pesanan Meja 1",
+                style: TextStyle(color: Colors.white),
+              ),
+              subtitle: Text(
+                "Tanggal: 2025-06-28",
+                style: TextStyle(color: Colors.white70),
+              ),
             ),
-            leading: const Icon(Icons.event_seat, color: Colors.white),
-            iconColor: Colors.white,
-            collapsedIconColor: Colors.white54,
-            children: const [
-              ListTile(
-                leading: Icon(Icons.chair, color: Colors.white),
-                title: Text("data", style: TextStyle(color: Colors.white)),
-                subtitle: Text("data", style: TextStyle(color: Colors.white70)),
-              ),
-              ListTile(
-                leading: Icon(Icons.chair, color: Colors.white),
-                title: Text("data", style: TextStyle(color: Colors.white)),
-                subtitle: Text("data", style: TextStyle(color: Colors.white70)),
-              ),
-            ],
-          ),
+          ],
         ),
-        Card(
-          color: AppColor.blackField,
-          elevation: 2,
-          child: ExpansionTile(
-            title: const Text(
-              "Histori Pesanan Makanan",
-              style: TextStyle(color: Colors.white),
+        const SizedBox(height: 12),
+        _buildExpansionTile(
+          title: "Histori Pesanan Makanan",
+          icon: Icons.fastfood,
+          children: const [
+            ListTile(
+              leading: Icon(Icons.restaurant, color: Colors.white),
+              title: Text("Makanan 1", style: TextStyle(color: Colors.white)),
+              subtitle: Text(
+                "Tanggal: 2025-06-27",
+                style: TextStyle(color: Colors.white70),
+              ),
             ),
-            leading: const Icon(Icons.fastfood, color: Colors.white),
-            iconColor: Colors.white,
-            collapsedIconColor: Colors.white54,
-            children: const [
-              ListTile(
-                leading: Icon(Icons.restaurant, color: Colors.white),
-                title: Text("data", style: TextStyle(color: Colors.white)),
-                subtitle: Text("data", style: TextStyle(color: Colors.white70)),
-              ),
-              ListTile(
-                leading: Icon(Icons.restaurant, color: Colors.white),
-                title: Text("data", style: TextStyle(color: Colors.white)),
-                subtitle: Text("data", style: TextStyle(color: Colors.white70)),
-              ),
-            ],
-          ),
+          ],
         ),
       ],
+    );
+  }
+
+  Widget _buildExpansionTile({
+    required String title,
+    required IconData icon,
+    required List<Widget> children,
+  }) {
+    return Card(
+      color: Colors.grey[850],
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: ExpansionTile(
+        title: Text(
+          title,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        leading: Icon(icon, color: Colors.tealAccent),
+        iconColor: Colors.white,
+        collapsedIconColor: Colors.white54,
+        children: children,
+      ),
     );
   }
 }

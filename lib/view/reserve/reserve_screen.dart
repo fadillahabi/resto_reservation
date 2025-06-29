@@ -1,72 +1,53 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:ppkd_flutter/api/reservation_api.dart';
+import 'package:ppkd_flutter/models/reservation_model.dart';
+import 'package:ppkd_flutter/view/reserve/add_reservation.dart';
 import 'package:ppkd_flutter/constant/app_color.dart';
 
-class ReserveScreen extends StatefulWidget {
-  const ReserveScreen({super.key});
+class ReservationScreen extends StatefulWidget {
+  const ReservationScreen({super.key});
+  static const String id = "/reservation_screen";
 
   @override
-  State<ReserveScreen> createState() => _ReserveScreenState();
+  State<ReservationScreen> createState() => _ReservationScreenState();
 }
 
-class _ReserveScreenState extends State<ReserveScreen> {
-  final _formKey = GlobalKey<FormState>();
+class _ReservationScreenState extends State<ReservationScreen> {
+  List<ReservationModel> _reservations = [];
+  bool _isLoading = true;
 
-  final TextEditingController dateController = TextEditingController();
-  final TextEditingController guestController = TextEditingController();
-  final TextEditingController notesController = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    _fetchReservations();
+  }
 
-  bool isSubmitting = false;
+  Future<void> _fetchReservations() async {
+    try {
+      final reservations = await ReservationApi.fetchReservations();
 
-  void submitReservation() {
-    if (_formKey.currentState!.validate()) {
+      // ✅ Tambahkan log di sini
+      print("Jumlah reservasi: ${reservations.length}");
+      for (var r in reservations) {
+        print("${r.reservedAt} - ${r.guestCount} - ${r.notes}");
+      }
+
       setState(() {
-        isSubmitting = true;
+        _reservations = reservations;
+        _isLoading = false;
       });
-
-      // Simulasi delay submit
-      Future.delayed(const Duration(seconds: 2), () {
-        setState(() {
-          isSubmitting = false;
-        });
-
-        // Dialog sukses
-        showDialog(
-          context: context,
-          builder:
-              (_) => AlertDialog(
-                title: const Text("Reservasi Berhasil"),
-                content: Text(
-                  "Tanggal: ${dateController.text}\n"
-                  "Jumlah Tamu: ${guestController.text}\n"
-                  "Catatan: ${notesController.text}",
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text("OK"),
-                  ),
-                ],
-              ),
-        );
-      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal memuat reservasi: $e')));
     }
   }
 
-  Future<void> _selectDate() async {
-    DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2100),
-    );
-    if (picked != null) {
-      setState(() {
-        dateController.text = picked.toString().substring(
-          0,
-          16,
-        ); // 'yyyy-MM-dd HH:mm'
-      });
-    }
+  String formatDateTime(String dateTimeString) {
+    final dateTime = DateTime.parse(dateTimeString);
+    return DateFormat('dd MMM yyyy, HH:mm').format(dateTime);
   }
 
   @override
@@ -74,81 +55,74 @@ class _ReserveScreenState extends State<ReserveScreen> {
     return Scaffold(
       backgroundColor: AppColor.blackMain,
       appBar: AppBar(
+        title: const Text("Daftar Reservasi"),
         backgroundColor: AppColor.blackMain,
-        title: const Text(
-          "Pesan Meja",
-          style: TextStyle(color: AppColor.textHeader),
-        ),
-        centerTitle: true,
+        foregroundColor: Colors.white,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              GestureDetector(
-                onTap: _selectDate,
-                child: AbsorbPointer(
-                  child: buildInputField("Tanggal Reservasi", dateController),
+      body:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _reservations.isEmpty
+              ? const Center(
+                child: Text(
+                  'Belum ada reservasi',
+                  style: TextStyle(color: Colors.white70),
+                ),
+              )
+              : RefreshIndicator(
+                onRefresh: _fetchReservations,
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: _reservations.length,
+                  itemBuilder: (context, index) {
+                    final res = _reservations[index];
+                    return Card(
+                      color: AppColor.blackField,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              formatDateTime(res.reservedAt),
+                              style: const TextStyle(
+                                color: Colors.orange,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "Tamu: ${res.guestCount}",
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              res.notes,
+                              style: const TextStyle(color: Colors.white70),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
-              const SizedBox(height: 12),
-              buildInputField(
-                "Jumlah Tamu",
-                guestController,
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 12),
-              buildInputField(
-                "Catatan",
-                notesController,
-                keyboardType: TextInputType.multiline,
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: isSubmitting ? null : submitReservation,
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-                child:
-                    isSubmitting
-                        ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(color: Colors.white),
-                        )
-                        : const Text("Submit"),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
-  Widget buildInputField(
-    String label,
-    TextEditingController controller, {
-    TextInputType keyboardType = TextInputType.text,
-  }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      maxLines: keyboardType == TextInputType.multiline ? 3 : 1,
-      style: const TextStyle(color: Colors.white),
-      validator:
-          (value) =>
-              value == null || value.isEmpty ? 'Tidak boleh kosong' : null,
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(color: Colors.white70),
-        enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Colors.white24),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Colors.orange),
-          borderRadius: BorderRadius.circular(8),
-        ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          final result = await Navigator.pushNamed(
+            context,
+            AddReservationPage.id,
+          );
+          if (result == true) _fetchReservations();
+        },
+        icon: const Icon(Icons.add),
+        label: const Text("Reservasi Baru"),
+        backgroundColor: Colors.orange,
       ),
     );
   }

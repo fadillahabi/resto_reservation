@@ -1,11 +1,20 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:ppkd_flutter/view/menu/menu_screen.dart';
+import 'package:ppkd_flutter/view/reserve/reserve_screen.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+
+import 'package:ppkd_flutter/api/menu_api.dart';
 import 'package:ppkd_flutter/api/user_api.dart';
 import 'package:ppkd_flutter/constant/app_color.dart';
 import 'package:ppkd_flutter/helper/shared_preference.dart';
+import 'package:ppkd_flutter/models/menu_model.dart';
 import 'package:ppkd_flutter/models/user_model.dart';
+import 'package:ppkd_flutter/view/menu/add_menu.dart';
+import 'package:ppkd_flutter/view/menu/edit_menu.dart';
 import 'package:ppkd_flutter/view/main/profile_screen.dart';
-import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:ppkd_flutter/view/reserve/add_reservation.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -17,32 +26,49 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
-
-  final List<Widget> _screens = [const MainContent(), const ProfileScreen()];
+  final GlobalKey<_MainContentState> _mainContentKey =
+      GlobalKey<_MainContentState>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [AppColor.blackMain, Colors.white],
+            colors: [AppColor.blackMain, Colors.grey],
             begin: Alignment.center,
             end: Alignment.bottomCenter,
           ),
         ),
-        child: _screens[_currentIndex],
+        child: SafeArea(
+          child: IndexedStack(
+            index: _currentIndex,
+            children: [
+              MainContent(key: _mainContentKey),
+              const ProfileScreen(),
+            ],
+          ),
+        ),
       ),
+      floatingActionButton:
+          _currentIndex == 0
+              ? FloatingActionButton.extended(
+                onPressed: () async {
+                  final result = await Navigator.pushNamed(context, AddMenu.id);
+                  if (result == true) {
+                    _mainContentKey.currentState?.refreshMenus();
+                  }
+                },
+                icon: const Icon(Icons.add),
+                label: const Text("Tambah Makanan"),
+                backgroundColor: Colors.orange,
+              )
+              : null,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         selectedItemColor: Colors.brown,
         unselectedItemColor: Colors.grey,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
+        onTap: (index) => setState(() => _currentIndex = index),
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
@@ -60,189 +86,351 @@ class MainContent extends StatefulWidget {
 }
 
 class _MainContentState extends State<MainContent> {
-  ProfileResponse? _profileData;
-  final bool _isLoading = false;
   int activeIndex = 0;
+  Future<ProfileResponse?>? _profileFuture;
+  Future<List<MenuModel>>? _menusFuture;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadProfile();
-  }
-
-  Future<void> _loadProfile() async {
-    final token = await PreferenceHandlerPM.getToken();
-    if (token != null) {
-      try {
-        final profile = await UserServicePM().getProfile(token);
-        setState(() {
-          _profileData = profile;
-        });
-      } catch (e) {
-        print("Error fetching profile: $e");
-      }
-    }
-  }
-
-  final List<String> imagePaths = [
+  final List<String> bannerImages = [
     "assets/images/restaurant4.jpg",
     "assets/images/restaurant5.jpg",
     "assets/images/food3.jpg",
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  void _loadData() {
+    _profileFuture = fetchProfile();
+    _menusFuture = MenuApi.fetchMenus();
+  }
+
+  void refreshMenus() {
+    setState(() {
+      _menusFuture = MenuApi.fetchMenus();
+    });
+  }
+
+  Future<ProfileResponse?> fetchProfile() async {
+    final token = await PreferenceHandlerPM.getToken();
+    if (token != null) {
+      try {
+        return await UserServicePM().getProfile(token);
+      } catch (e) {
+        debugPrint('Gagal memuat profile: $e');
+      }
+    }
+    return null;
+  }
+
+  Widget _fallbackImage() {
+    return Container(
+      color: Colors.grey[300],
+      width: 80,
+      height: 80,
+      alignment: Alignment.center,
+      child: const Icon(Icons.broken_image, size: 32, color: Colors.grey),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // AppBar manual
-        Container(
-          padding: const EdgeInsets.only(
-            top: 60,
-            left: 16,
-            right: 16,
-            bottom: 32,
-          ),
-          color: Colors.black,
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 24,
-                backgroundColor: Colors.grey,
-                child: Icon(Icons.person),
-              ),
-              SizedBox(width: 10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    final double screenWidth = MediaQuery.of(context).size.width;
+
+    return FutureBuilder<ProfileResponse?>(
+      future: _profileFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(color: Colors.white),
+          );
+        }
+
+        final profile = snapshot.data;
+
+        return ListView(
+          children: [
+            // === Profile Header ===
+            Container(
+              color: Colors.black,
+              padding: const EdgeInsets.all(16),
+              child: Row(
                 children: [
-                  Text(
-                    _isLoading
-                        ? "Hai, Loading..."
-                        : "Hai, ${_profileData?.name ?? 'User'}",
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
+                  const CircleAvatar(
+                    radius: 24,
+                    backgroundColor: Colors.grey,
+                    child: Icon(Icons.person, color: Colors.white),
                   ),
-                  Text(
-                    _isLoading
-                        ? "Loading..."
-                        : _profileData?.email ?? "Email Not Available",
-                    style: const TextStyle(color: Colors.white70, fontSize: 16),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          profile?.name ?? '-',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        Text(
+                          profile?.email ?? '-',
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
-            ],
-          ),
-        ),
+            ),
 
-        // CarouselSlider
-        Column(
-          children: [
-            CarouselSlider(
-              options: CarouselOptions(
-                height: 250,
-                autoPlay: true,
-                enlargeCenterPage: true,
-                viewportFraction: 1,
-                autoPlayInterval: const Duration(seconds: 3),
-                onPageChanged: (index, reason) {
-                  setState(() {
-                    activeIndex = index;
-                  });
+            // === Carousel ===
+            Stack(
+              children: [
+                CarouselSlider.builder(
+                  itemCount: bannerImages.length,
+                  itemBuilder:
+                      (context, index, _) => Image.asset(
+                        bannerImages[index],
+                        fit: BoxFit.cover,
+                        width: screenWidth,
+                      ),
+                  options: CarouselOptions(
+                    height: 200,
+                    autoPlay: true,
+                    viewportFraction: 1,
+                    onPageChanged:
+                        (index, reason) => setState(() => activeIndex = index),
+                  ),
+                ),
+                Positioned(
+                  bottom: 10,
+                  left: 16,
+                  child: AnimatedSmoothIndicator(
+                    activeIndex: activeIndex,
+                    count: bannerImages.length,
+                    effect: const WormEffect(
+                      activeDotColor: Colors.white,
+                      dotColor: Colors.grey,
+                      dotHeight: 8,
+                      dotWidth: 8,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            // === Reservation Banner ===
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: InkWell(
+                onTap: () {
+                  Navigator.pushNamed(context, ReservationScreen.id);
                 },
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.orange.shade300, Colors.orange.shade700],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    children: [
+                      const CircleAvatar(
+                        backgroundColor: Colors.white,
+                        radius: 24,
+                        child: Icon(
+                          Icons.event_seat,
+                          color: Colors.orange,
+                          size: 28,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Butuh Meja?",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            Text(
+                              "Klik untuk pesan meja secara online",
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.arrow_forward_ios, color: Colors.white),
+                    ],
+                  ),
+                ),
               ),
-              items:
-                  imagePaths.map((imagePath) {
-                    return Builder(
-                      builder: (BuildContext context) {
-                        return CarouselImage(imagePath);
+            ),
+
+            // === Menu List Title ===
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Jelajahi Menu Favoritmu',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, MenuScreen.id);
+                    },
+                    child: const Text(
+                      'More',
+                      style: TextStyle(color: Colors.orange),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // === Menu List ===
+            FutureBuilder<List<MenuModel>>(
+              future: _menusFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(color: Colors.white),
+                  );
+                } else if (snapshot.hasError || !snapshot.hasData) {
+                  return const Center(
+                    child: Text(
+                      'Gagal memuat menu',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  );
+                }
+
+                final menus = snapshot.data!;
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: menus.length,
+                  itemBuilder: (context, index) {
+                    final menu = menus[index];
+                    final imageUrl =
+                        menu.image.isNotEmpty
+                            ? (menu.image.startsWith('http')
+                                ? menu.image
+                                : 'http://appreservasi.mobileprojp.com/storage/${menu.image}')
+                            : '';
+
+                    return InkWell(
+                      onTap: () async {
+                        final result = await Navigator.pushNamed(
+                          context,
+                          EditMenuPage.id,
+                          arguments: menu,
+                        );
+                        if (result == true) refreshMenus();
                       },
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 6,
+                        ),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    menu.name,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    menu.description,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(color: Colors.grey),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    NumberFormat.currency(
+                                      locale: 'id_ID',
+                                      symbol: 'Rp ',
+                                      decimalDigits: 0,
+                                    ).format(menu.price),
+                                    style: const TextStyle(
+                                      color: Colors.orange,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child:
+                                  imageUrl.isNotEmpty
+                                      ? Image.network(
+                                        imageUrl,
+                                        width: 80,
+                                        height: 80,
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (_, __, ___) => _fallbackImage(),
+                                      )
+                                      : _fallbackImage(),
+                            ),
+                          ],
+                        ),
+                      ),
                     );
-                  }).toList(),
+                  },
+                );
+              },
             ),
-            const SizedBox(height: 8),
-            AnimatedSmoothIndicator(
-              activeIndex: activeIndex,
-              count: imagePaths.length,
-              effect: const ExpandingDotsEffect(
-                dotHeight: 8,
-                dotWidth: 8,
-                activeDotColor: Colors.orange,
-                dotColor: Colors.grey,
-              ),
-            ),
+            const SizedBox(height: 24),
           ],
-        ),
-        // Body Content
-      ],
-    );
-  }
-}
-
-// Carousel Image Widget
-class CarouselImage extends StatelessWidget {
-  final String assetPath;
-
-  const CarouselImage(this.assetPath, {super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        image: DecorationImage(image: AssetImage(assetPath), fit: BoxFit.cover),
-      ),
-    );
-  }
-}
-
-// Brand Card
-class BrandCard extends StatelessWidget {
-  final String title;
-  final String imageUrl;
-
-  const BrandCard(this.title, this.imageUrl, {super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 140,
-      margin: const EdgeInsets.only(right: 12),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        image: DecorationImage(image: AssetImage(imageUrl), fit: BoxFit.cover),
-      ),
-      alignment: Alignment.bottomLeft,
-      padding: const EdgeInsets.all(8),
-      child: Text(
-        title,
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-}
-
-// Reward Card
-class RewardCard extends StatelessWidget {
-  final String title;
-  final String imageUrl;
-
-  const RewardCard(this.title, this.imageUrl, {super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 140,
-      margin: const EdgeInsets.only(right: 12),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        image: DecorationImage(image: AssetImage(imageUrl), fit: BoxFit.cover),
-      ),
+        );
+      },
     );
   }
 }

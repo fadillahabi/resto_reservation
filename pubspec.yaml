@@ -39,6 +39,9 @@ dependencies:
   carousel_slider: ^5.1.1
   smooth_page_indicator: ^1.2.1
   sliding_up_panel: ^2.0.0+1
+  animate_do: ^4.2.0
+  http_parser: ^4.1.2
+  image_picker: ^1.1.2
 
 
 

@@ -3,106 +3,92 @@ import 'package:ppkd_flutter/view/open/welcome_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
-  // static const String id = "/splash_screen";
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  bool _assetsPrecached = false;
+
   void changePage() {
-    Future.delayed(Duration(seconds: 5), () async {
-      // bool isLogin = await PreferenceHandler.getLogin();
-      // print("isLogin: $isLogin");
-      // if (isLogin) {
-      //   return Navigator.pushNamedAndRemoveUntil(
-      //     context,
-      //     "/login",
-      //     (route) => false,
-      //   );
-      // } else {
+    Future.delayed(const Duration(seconds: 5), () {
       Navigator.pushNamedAndRemoveUntil(
         context,
         WelcomeScreen.id,
         (route) => false,
       );
-      // }
     });
   }
 
   @override
   void initState() {
-    changePage();
     super.initState();
+
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
+    );
+
+    _animationController.forward();
+    changePage();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (!_assetsPrecached) {
+      precacheImage(
+        const AssetImage('assets/images/background_splash.jpg'),
+        context,
+      );
+      precacheImage(const AssetImage('assets/images/logo2.png'), context);
+      _assetsPrecached = true;
+    }
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
     return Scaffold(
-      backgroundColor: Color(0xffFEF4FC),
       body: Stack(
         children: [
-          Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/images/background_splash.jpg'),
-                fit: BoxFit.cover,
-              ),
+          // Background image
+          SizedBox(
+            height: size.height,
+            width: size.width,
+            child: Image.asset(
+              'assets/images/background_splash.jpg',
+              fit: BoxFit.cover,
             ),
           ),
-          Container(color: Colors.black.withOpacity(0.4)),
+
+          // Overlay
+          Container(color: Colors.black.withOpacity(0.5)),
+
+          // Logo (fade-in)
           Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Text(
-                //   "Flutter App",
-                //   style: TextStyle(
-                //     fontSize: 24,
-                //     fontWeight: FontWeight.bold,
-                //     color: Colors.white,
-                //   ),
-                // ),
-                Positioned.fill(
-                  child: Image.asset(
-                    ('assets/images/logo2.png'), // Gunakan banner landscape
-                    fit: BoxFit.cover, // Pastikan gambar menutupi seluruh area
-                  ),
-                ),
-                // Padding(
-                //   padding: const EdgeInsets.all(24.0),
-                //   child: SizedBox(
-                //     width: double.infinity,
-                //     height: 56,
-                //     child: ElevatedButton(
-                //       style: ElevatedButton.styleFrom(
-                //         backgroundColor: const Color.fromARGB(255, 219, 176, 46),
-                //         foregroundColor: const Color(0xff00224F),
-                //         shape: RoundedRectangleBorder(
-                //           borderRadius: BorderRadius.circular(32),
-                //         ),
-                //       ),
-                //       onPressed: () {
-                //         Navigator.push(
-                //           context,
-                //           MaterialPageRoute(
-                //             builder: (context) => const TugasEnamFlutter(),
-                //           ),
-                //         );
-                //       },
-                //       child: const Text(
-                //         'Masuk',
-                //         style: TextStyle(
-                //           color: Colors.white70,
-                //           fontSize: 16,
-                //           fontWeight: FontWeight.w700,
-                //           fontFamily: "Roboto",
-                //         ),
-                //       ),
-                //     ),
-                //   ),
-                // ),
-              ],
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: Image.asset(
+                'assets/images/logo2.png',
+                width: size.width * 0.6,
+              ),
             ),
           ),
         ],
