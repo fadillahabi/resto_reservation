@@ -102,14 +102,6 @@ class _AddMenuState extends State<AddMenu> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Informasi Menu',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
               const SizedBox(height: 20),
               _buildTextField(controller: nameController, label: 'Nama Menu'),
               const SizedBox(height: 15),

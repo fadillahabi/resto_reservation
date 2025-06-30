@@ -11,6 +11,7 @@ import 'package:ppkd_flutter/view/main/profile_screen.dart';
 import 'package:ppkd_flutter/view/menu/add_menu.dart';
 import 'package:ppkd_flutter/view/menu/edit_menu.dart';
 import 'package:ppkd_flutter/view/menu/menu_screen.dart';
+import 'package:ppkd_flutter/view/reserve/add_reservation.dart';
 import 'package:ppkd_flutter/view/reserve/reservation_screen.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
@@ -39,12 +40,16 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ),
         child: SafeArea(
-          child: IndexedStack(
-            index: _currentIndex,
-            children: [
-              MainContent(key: _mainContentKey),
-              const ProfileScreen(),
-            ],
+          child: Builder(
+            builder: (context) {
+              if (_currentIndex == 0) {
+                return MainContent(key: _mainContentKey);
+              } else if (_currentIndex == 1) {
+                return const ReservationScreen();
+              } else {
+                return const ProfileScreen();
+              }
+            },
           ),
         ),
       ),
@@ -69,6 +74,7 @@ class _MainScreenState extends State<MainScreen> {
         onTap: (index) => setState(() => _currentIndex = index),
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+          BottomNavigationBarItem(icon: Icon(Icons.event), label: "Reservasi"),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
         ],
       ),
@@ -229,7 +235,7 @@ class _MainContentState extends State<MainContent> {
               padding: const EdgeInsets.all(16),
               child: InkWell(
                 onTap: () {
-                  Navigator.pushNamed(context, ReservationScreen.id);
+                  Navigator.pushNamed(context, AddReservationPage.id);
                 },
                 borderRadius: BorderRadius.circular(16),
                 child: Container(
@@ -337,14 +343,14 @@ class _MainContentState extends State<MainContent> {
                     final imageUrl = menu.imageUrl ?? '';
 
                     return InkWell(
-                      onTap: () async {
-                        final result = await Navigator.pushNamed(
+                      onTap: () {
+                        Navigator.pushNamed(
                           context,
-                          EditMenuPage.id,
+                          '/detail_menu',
                           arguments: menu,
                         );
-                        if (result == true) refreshMenus();
                       },
+
                       child: Container(
                         margin: const EdgeInsets.symmetric(
                           horizontal: 16,

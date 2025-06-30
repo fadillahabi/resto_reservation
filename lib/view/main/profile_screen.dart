@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:ppkd_flutter/api/reservation_api.dart';
 import 'package:ppkd_flutter/api/user_api.dart';
 import 'package:ppkd_flutter/helper/shared_preference.dart';
+import 'package:ppkd_flutter/models/reservation_model.dart';
 import 'package:ppkd_flutter/models/user_model.dart';
 import 'package:ppkd_flutter/view/login_register/login_screen.dart';
 
@@ -15,11 +18,13 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   Future<ProfileResponse?>? _profileFuture;
+  Future<List<ReservationModel>>? _reservationsFuture;
 
   @override
   void initState() {
     super.initState();
     _profileFuture = fetchProfile();
+    _reservationsFuture = ReservationApi.fetchReservations();
   }
 
   Future<ProfileResponse?> fetchProfile() async {
@@ -28,7 +33,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       try {
         return await UserServicePM().getProfile(token);
       } catch (e) {
-        debugPrint('Gagal memuat profile: \$e');
+        debugPrint('Gagal memuat profile: $e');
       }
     }
     return null;
@@ -240,42 +245,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildHistorySection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _buildExpansionTile(
+    return FutureBuilder<List<ReservationModel>>(
+      future: _reservationsFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(color: Colors.white),
+          );
+        }
+
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Text(
+            "Belum ada histori reservasi.",
+            style: TextStyle(color: Colors.white70),
+          );
+        }
+
+        final reservations = snapshot.data!;
+        return _buildExpansionTile(
           title: "Histori Pesanan Meja",
           icon: Icons.event_seat,
-          children: const [
-            ListTile(
-              leading: Icon(Icons.chair, color: Colors.white),
-              title: Text(
-                "Pesanan Meja 1",
-                style: TextStyle(color: Colors.white),
-              ),
-              subtitle: Text(
-                "Tanggal: 2025-06-28",
-                style: TextStyle(color: Colors.white70),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        _buildExpansionTile(
-          title: "Histori Pesanan Makanan",
-          icon: Icons.fastfood,
-          children: const [
-            ListTile(
-              leading: Icon(Icons.restaurant, color: Colors.white),
-              title: Text("Makanan 1", style: TextStyle(color: Colors.white)),
-              subtitle: Text(
-                "Tanggal: 2025-06-27",
-                style: TextStyle(color: Colors.white70),
-              ),
-            ),
-          ],
-        ),
-      ],
+          children:
+              reservations.map((res) {
+                return ListTile(
+                  leading: const Icon(Icons.chair, color: Colors.white),
+                  title: Text(
+                    "Tamu: ${res.guestCount}",
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  subtitle: Text(
+                    "Tanggal: ${DateFormat('dd MMM yyyy, HH:mm').format(DateTime.parse(res.reservedAt))}",
+                    style: const TextStyle(color: Colors.white70),
+                  ),
+                );
+              }).toList(),
+        );
+      },
     );
   }
 

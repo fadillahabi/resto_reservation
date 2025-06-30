@@ -109,45 +109,55 @@ class _ReservationScreenState extends State<ReservationScreen> {
                   itemCount: _reservations.length,
                   itemBuilder: (context, index) {
                     final res = _reservations[index];
-                    return Card(
-                      color: AppColor.blackField,
+                    return Container(
                       margin: const EdgeInsets.only(bottom: 16),
-                      shape: RoundedRectangleBorder(
+                      decoration: BoxDecoration(
+                        color: AppColor.blackField,
                         borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              formatDateTime(res.reservedAt),
-                              style: const TextStyle(
-                                color: Colors.orange,
-                                fontWeight: FontWeight.bold,
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.all(16),
+                        leading: const Icon(
+                          Icons.event_note,
+                          color: Colors.orange,
+                          size: 32,
+                        ),
+                        title: Text(
+                          formatDateTime(res.reservedAt),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        subtitle: Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Tamu: ${res.guestCount}",
+                                style: const TextStyle(color: Colors.white),
                               ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              "Tamu: ${res.guestCount}",
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              res.notes,
-                              style: const TextStyle(color: Colors.white70),
-                            ),
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: IconButton(
-                                onPressed: () => _deleteReservation(res.id),
-                                icon: const Icon(
-                                  Icons.delete,
-                                  color: Colors.red,
-                                ),
+                              const SizedBox(height: 4),
+                              Text(
+                                res.notes,
+                                style: const TextStyle(color: Colors.white70),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
+                        ),
+                        trailing: IconButton(
+                          onPressed: () => _deleteReservation(res.id),
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          tooltip: 'Hapus reservasi',
                         ),
                       ),
                     );

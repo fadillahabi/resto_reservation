@@ -6,6 +6,7 @@ import 'package:ppkd_flutter/view/login_register/register_screen.dart';
 import 'package:ppkd_flutter/view/main/main_screen.dart';
 import 'package:ppkd_flutter/view/main/profile_screen.dart';
 import 'package:ppkd_flutter/view/menu/add_menu.dart';
+import 'package:ppkd_flutter/view/menu/detail_menu.dart';
 import 'package:ppkd_flutter/view/menu/edit_menu.dart';
 import 'package:ppkd_flutter/view/menu/menu_screen.dart';
 import 'package:ppkd_flutter/view/open/choose_screen.dart';
@@ -28,6 +29,10 @@ class MyApp extends StatelessWidget {
       initialRoute: "/",
       routes: {
         '/': (context) => SplashScreen(),
+        '/detail_menu': (context) {
+          final menu = ModalRoute.of(context)!.settings.arguments as MenuModel;
+          return DetailMenuPage(menu: menu);
+        },
         LoginScreen.id: (context) => LoginScreen(),
         RegisterScreen.id: (context) => RegisterScreen(),
         WelcomeScreen.id: (context) => WelcomeScreen(),
