@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:ppkd_flutter/api/menu_api.dart';
+import 'package:ppkd_flutter/constant/app_color.dart';
 import 'package:ppkd_flutter/models/menu_model.dart';
 import 'package:ppkd_flutter/view/menu/edit_menu.dart';
-import 'package:ppkd_flutter/constant/app_color.dart';
 
 class MenuScreen extends StatefulWidget {
   const MenuScreen({super.key});
@@ -37,6 +38,16 @@ class _MenuScreenState extends State<MenuScreen> {
     }
   }
 
+  Widget _fallbackImage() {
+    return Container(
+      color: Colors.grey[300],
+      width: 80,
+      height: 80,
+      alignment: Alignment.center,
+      child: const Icon(Icons.broken_image, size: 32, color: Colors.grey),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,6 +67,7 @@ class _MenuScreenState extends State<MenuScreen> {
                   itemCount: _menus.length,
                   itemBuilder: (context, index) {
                     final menu = _menus[index];
+                    final imageUrl = menu.imageUrl ?? '';
                     return Card(
                       color: AppColor.blackField,
                       margin: const EdgeInsets.only(bottom: 16),
@@ -77,32 +89,41 @@ class _MenuScreenState extends State<MenuScreen> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              if (menu.image != null &&
-                                  menu.image!.contains(','))
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Image.memory(
-                                    Uri.parse(
-                                      menu.image!,
-                                    ).data!.contentAsBytes(),
-                                    height: 80,
-                                    width: 80,
-                                    fit: BoxFit.cover,
-                                  ),
-                                )
-                              else
-                                Container(
-                                  height: 80,
-                                  width: 80,
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[800],
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: const Icon(
-                                    Icons.fastfood,
-                                    color: Colors.white70,
-                                  ),
-                                ),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child:
+                                    imageUrl.isNotEmpty
+                                        ? Image.network(
+                                          imageUrl,
+                                          width: 80,
+                                          height: 80,
+                                          fit: BoxFit.cover,
+                                          loadingBuilder: (
+                                            context,
+                                            child,
+                                            loadingProgress,
+                                          ) {
+                                            if (loadingProgress == null)
+                                              return child;
+                                            return SizedBox(
+                                              width: 80,
+                                              height: 80,
+                                              child: Center(
+                                                child: CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  valueColor:
+                                                      AlwaysStoppedAnimation<
+                                                        Color
+                                                      >(Colors.orange),
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                          errorBuilder:
+                                              (_, __, ___) => _fallbackImage(),
+                                        )
+                                        : _fallbackImage(),
+                              ),
                               const SizedBox(width: 16),
                               Expanded(
                                 child: Column(
@@ -125,9 +146,14 @@ class _MenuScreenState extends State<MenuScreen> {
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
-                                      'Rp ${menu.price}',
+                                      NumberFormat.currency(
+                                        locale: 'id_ID',
+                                        symbol: 'Rp ',
+                                        decimalDigits: 0,
+                                      ).format(menu.price),
                                       style: const TextStyle(
-                                        color: Colors.amber,
+                                        color: Colors.orange,
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                   ],

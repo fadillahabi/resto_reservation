@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ppkd_flutter/api/reservation_api.dart';
+import 'package:ppkd_flutter/constant/app_color.dart';
 import 'package:ppkd_flutter/models/reservation_model.dart';
 import 'package:ppkd_flutter/view/reserve/add_reservation.dart';
-import 'package:ppkd_flutter/constant/app_color.dart';
 
 class ReservationScreen extends StatefulWidget {
   const ReservationScreen({super.key});
@@ -26,13 +26,6 @@ class _ReservationScreenState extends State<ReservationScreen> {
   Future<void> _fetchReservations() async {
     try {
       final reservations = await ReservationApi.fetchReservations();
-
-      // ✅ Tambahkan log di sini
-      print("Jumlah reservasi: ${reservations.length}");
-      for (var r in reservations) {
-        print("${r.reservedAt} - ${r.guestCount} - ${r.notes}");
-      }
-
       setState(() {
         _reservations = reservations;
         _isLoading = false;
@@ -42,6 +35,46 @@ class _ReservationScreenState extends State<ReservationScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Gagal memuat reservasi: $e')));
+    }
+  }
+
+  Future<void> _deleteReservation(int id) async {
+    final konfirmasi = await showDialog<bool>(
+      context: context,
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Konfirmasi Hapus'),
+            content: const Text('Yakin ingin menghapus reservasi ini?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Batal'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Hapus'),
+              ),
+            ],
+          ),
+    );
+
+    if (konfirmasi != true) return;
+    setState(() => _isLoading = true);
+
+    try {
+      await ReservationApi.deleteReservation(id);
+      await _fetchReservations();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Reservasi berhasil dihapus')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal menghapus reservasi: $e')));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -104,6 +137,16 @@ class _ReservationScreenState extends State<ReservationScreen> {
                               res.notes,
                               style: const TextStyle(color: Colors.white70),
                             ),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: IconButton(
+                                onPressed: () => _deleteReservation(res.id),
+                                icon: const Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -111,7 +154,6 @@ class _ReservationScreenState extends State<ReservationScreen> {
                   },
                 ),
               ),
-
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           final result = await Navigator.pushNamed(

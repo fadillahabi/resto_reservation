@@ -1,11 +1,10 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:ppkd_flutter/models/menu_model.dart';
 import 'package:ppkd_flutter/api/menu_api.dart';
 import 'package:ppkd_flutter/constant/app_color.dart';
+import 'package:ppkd_flutter/models/menu_model.dart';
 
 class EditMenuPage extends StatefulWidget {
   final MenuModel menu;
@@ -55,7 +54,8 @@ class _EditMenuPageState extends State<EditMenuPage> {
     if (pickedImage != null) {
       final bytes = await pickedImage.readAsBytes();
       setState(() {
-        base64Image = 'data:image/png;base64,${base64Encode(bytes)}';
+        base64Image =
+            'data:image/${pickedImage.path.split('.').last};base64,${base64Encode(bytes)}';
       });
     }
   }
@@ -68,8 +68,10 @@ class _EditMenuPageState extends State<EditMenuPage> {
       id: widget.menu.id,
       name: _nameController.text,
       description: _descriptionController.text,
-      price: int.tryParse(_priceController.text) ?? 0,
+      price: double.tryParse(_priceController.text) ?? 0.0,
+
       image: base64Image,
+      imageUrl: widget.menu.imageUrl, // ✅ tambahkan ini
       createdAt: widget.menu.createdAt,
       updatedAt: DateTime.now(),
     );

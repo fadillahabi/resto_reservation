@@ -1,10 +1,10 @@
+import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:ppkd_flutter/constant/app_color.dart';
 import 'package:ppkd_flutter/view/main/main_screen.dart';
 import 'package:ppkd_flutter/view/menu/menu_screen.dart';
-import 'package:ppkd_flutter/view/reserve/reserve_screen.dart';
+import 'package:ppkd_flutter/view/reserve/add_reservation.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
-import 'package:animate_do/animate_do.dart';
 
 class ChooseScreen extends StatefulWidget {
   const ChooseScreen({super.key});
@@ -17,7 +17,7 @@ class ChooseScreen extends StatefulWidget {
 class _ChooseScreenState extends State<ChooseScreen> {
   final List<Map<String, dynamic>> profiles = [
     {"name": "Pesan Meja", "image": "assets/images/reserve_table.jpg"},
-    {"name": "Pesan Makanan", "image": "assets/images/food.jpg"},
+    {"name": "Daftar Makanan", "image": "assets/images/food.jpg"},
   ];
 
   final PanelController _panelController = PanelController();
@@ -66,21 +66,21 @@ class _ChooseScreenState extends State<ChooseScreen> {
                     profiles.map((profile) {
                       return InkWell(
                         onTap: () {
-                          // if (profile["name"] == "Pesan Meja") {
-                          //   Navigator.push(
-                          //     context,
-                          //     MaterialPageRoute(
-                          //       builder: (_) => const AddReservasiScreen(),
-                          //     ),
-                          //   );
-                          // } else if (profile["name"] == "Pesan Makanan") {
-                          //   // Navigator.push(
-                          //   //   context,
-                          //   //   MaterialPageRoute(
-                          //   //     builder: (_) => const MenuScreen(),
-                          //   //   ),
-                          //   // );
-                          // }
+                          if (profile["name"] == "Pesan Meja") {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => AddReservationPage(),
+                              ),
+                            );
+                          } else if (profile["name"] == "Daftar Makanan") {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const MenuScreen(),
+                              ),
+                            );
+                          }
                         },
                         child: Column(
                           children: [

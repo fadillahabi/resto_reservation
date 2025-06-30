@@ -1,15 +1,14 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
+import 'package:ppkd_flutter/api/endpoint.dart';
 import 'package:ppkd_flutter/constant/app_color.dart';
 import 'package:ppkd_flutter/helper/shared_preference.dart';
-import 'package:ppkd_flutter/api/endpoint.dart';
 
 class AddMenu extends StatefulWidget {
-  const AddMenu({Key? key}) : super(key: key);
+  const AddMenu({super.key});
   static const String id = "/add_menu";
 
   @override
@@ -33,7 +32,8 @@ class _AddMenuState extends State<AddMenu> {
     if (pickedImage != null) {
       final bytes = await pickedImage.readAsBytes();
       setState(() {
-        base64Image = 'data:image/png;base64,${base64Encode(bytes)}';
+        base64Image =
+            'data:image/${pickedImage.path.split('.').last};base64,${base64Encode(bytes)}';
       });
     }
   }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:ppkd_flutter/api/user_api.dart';
-import 'package:ppkd_flutter/constant/app_color.dart';
 import 'package:ppkd_flutter/helper/shared_preference.dart';
 import 'package:ppkd_flutter/models/user_model.dart';
 import 'package:ppkd_flutter/view/login_register/login_screen.dart';

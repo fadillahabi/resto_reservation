@@ -1,20 +1,18 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:ppkd_flutter/view/menu/menu_screen.dart';
-import 'package:ppkd_flutter/view/reserve/reserve_screen.dart';
-import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-
 import 'package:ppkd_flutter/api/menu_api.dart';
 import 'package:ppkd_flutter/api/user_api.dart';
 import 'package:ppkd_flutter/constant/app_color.dart';
 import 'package:ppkd_flutter/helper/shared_preference.dart';
 import 'package:ppkd_flutter/models/menu_model.dart';
 import 'package:ppkd_flutter/models/user_model.dart';
+import 'package:ppkd_flutter/view/main/profile_screen.dart';
 import 'package:ppkd_flutter/view/menu/add_menu.dart';
 import 'package:ppkd_flutter/view/menu/edit_menu.dart';
-import 'package:ppkd_flutter/view/main/profile_screen.dart';
-import 'package:ppkd_flutter/view/reserve/add_reservation.dart';
+import 'package:ppkd_flutter/view/menu/menu_screen.dart';
+import 'package:ppkd_flutter/view/reserve/reservation_screen.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -304,7 +302,7 @@ class _MainContentState extends State<MainContent> {
                       Navigator.pushNamed(context, MenuScreen.id);
                     },
                     child: const Text(
-                      'More',
+                      'Lainnya',
                       style: TextStyle(color: Colors.orange),
                     ),
                   ),
@@ -336,12 +334,7 @@ class _MainContentState extends State<MainContent> {
                   itemCount: menus.length,
                   itemBuilder: (context, index) {
                     final menu = menus[index];
-                    final imageUrl =
-                        menu.image.isNotEmpty
-                            ? (menu.image.startsWith('http')
-                                ? menu.image
-                                : 'http://appreservasi.mobileprojp.com/storage/${menu.image}')
-                            : '';
+                    final imageUrl = menu.imageUrl ?? '';
 
                     return InkWell(
                       onTap: () async {
@@ -414,6 +407,27 @@ class _MainContentState extends State<MainContent> {
                                         width: 80,
                                         height: 80,
                                         fit: BoxFit.cover,
+                                        loadingBuilder: (
+                                          context,
+                                          child,
+                                          loadingProgress,
+                                        ) {
+                                          if (loadingProgress == null)
+                                            return child;
+                                          return SizedBox(
+                                            width: 80,
+                                            height: 80,
+                                            child: Center(
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                valueColor:
+                                                    AlwaysStoppedAnimation<
+                                                      Color
+                                                    >(Colors.orange),
+                                              ),
+                                            ),
+                                          );
+                                        },
                                         errorBuilder:
                                             (_, __, ___) => _fallbackImage(),
                                       )

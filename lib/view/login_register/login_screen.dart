@@ -45,7 +45,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         const SizedBox(height: 40),
                         Text(
-                          "Selamat Datang kembali!",
+                          "Selamat Datang Kembali",
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: size.width * 0.06, // Responsif

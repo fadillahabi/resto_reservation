@@ -1,25 +1,35 @@
 class ReservationModel {
   final int id;
   final int userId;
-  final int guestCount;
   final String reservedAt;
+  final int guestCount;
   final String notes;
 
   ReservationModel({
     required this.id,
     required this.userId,
-    required this.guestCount,
     required this.reservedAt,
+    required this.guestCount,
     required this.notes,
   });
 
   factory ReservationModel.fromJson(Map<String, dynamic> json) {
     return ReservationModel(
-      id: int.parse(json['id'].toString()),
-      userId: int.parse(json['user_id'].toString()),
-      guestCount: int.parse(json['guest_count'].toString()),
-      reservedAt: json['reserved_at'],
+      id: json['id'],
+      userId: int.tryParse(json['user_id'].toString()) ?? 0,
+      reservedAt: json['reserved_at'] ?? '',
+      guestCount: int.tryParse(json['guest_count'].toString()) ?? 0,
       notes: json['notes'] ?? '',
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'user_id': userId,
+      'reserved_at': reservedAt,
+      'guest_count': guestCount,
+      'notes': notes,
+    };
   }
 }

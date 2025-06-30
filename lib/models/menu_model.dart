@@ -2,45 +2,44 @@ class MenuModel {
   final int id;
   final String name;
   final String description;
-  final int price;
+  final double price; // ⬅️ Ubah jadi double
   final String image;
-  final DateTime createdAt;
-  final DateTime updatedAt;
+  final String imageUrl;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   MenuModel({
     required this.id,
     required this.name,
     required this.description,
-    required this.price,
+    required this.price, // ⬅️ double
     required this.image,
-    required this.createdAt,
-    required this.updatedAt,
+    required this.imageUrl,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory MenuModel.fromJson(Map<String, dynamic> json) {
     return MenuModel(
-      id: json['id'] ?? 0,
+      id:
+          json['id'] is int
+              ? json['id']
+              : int.tryParse(json['id'].toString()) ?? 0,
       name: json['name'] ?? '',
       description: json['description'] ?? '',
-      price: int.tryParse(json['price']?.toString() ?? '0') ?? 0,
+      price:
+          double.tryParse(json['price'].toString()) ??
+          0.0, // ⬅️ ubah jadi double
       image: json['image'] ?? '',
+      imageUrl: json['image_url'] ?? '',
       createdAt:
           json['created_at'] != null
-              ? DateTime.parse(json['created_at'])
-              : DateTime.now(),
+              ? DateTime.tryParse(json['created_at'])
+              : null,
       updatedAt:
           json['updated_at'] != null
-              ? DateTime.parse(json['updated_at'])
-              : DateTime.now(),
+              ? DateTime.tryParse(json['updated_at'])
+              : null,
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'description': description,
-      'price': price,
-      'image': image,
-    };
   }
 }
