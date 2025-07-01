@@ -26,11 +26,13 @@ class _ReservationScreenState extends State<ReservationScreen> {
   Future<void> _fetchReservations() async {
     try {
       final reservations = await ReservationApi.fetchReservations();
+      if (!mounted) return;
       setState(() {
         _reservations = reservations;
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => _isLoading = false);
       ScaffoldMessenger.of(
         context,
@@ -88,7 +90,10 @@ class _ReservationScreenState extends State<ReservationScreen> {
     return Scaffold(
       backgroundColor: AppColor.blackMain,
       appBar: AppBar(
-        title: const Text("Daftar Reservasi"),
+        title: const Text(
+          "Daftar Reservasi",
+          style: TextStyle(color: Colors.orange),
+        ),
         backgroundColor: AppColor.blackMain,
         foregroundColor: Colors.white,
       ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:ppkd_flutter/models/menu_model.dart';
 import 'package:ppkd_flutter/constant/app_color.dart';
+import 'package:ppkd_flutter/models/menu_model.dart';
 
 class DetailMenuPage extends StatelessWidget {
   final MenuModel menu;
@@ -12,7 +12,10 @@ class DetailMenuPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColor.blackMain,
       appBar: AppBar(
-        title: const Text("Detail Menu"),
+        title: const Text(
+          "Detail Menu",
+          style: TextStyle(color: Colors.orange),
+        ),
         backgroundColor: AppColor.blackMain,
         foregroundColor: Colors.white,
       ),
@@ -24,9 +27,9 @@ class DetailMenuPage extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(16),
               child:
-                  menu.imageUrl != null && menu.imageUrl!.isNotEmpty
+                  menu.imageUrl.isNotEmpty
                       ? Image.network(
-                        menu.imageUrl!,
+                        menu.imageUrl,
                         width: double.infinity,
                         height: 200,
                         fit: BoxFit.cover,

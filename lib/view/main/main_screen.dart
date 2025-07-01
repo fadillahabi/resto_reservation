@@ -9,7 +9,6 @@ import 'package:ppkd_flutter/models/menu_model.dart';
 import 'package:ppkd_flutter/models/user_model.dart';
 import 'package:ppkd_flutter/view/main/profile_screen.dart';
 import 'package:ppkd_flutter/view/menu/add_menu.dart';
-import 'package:ppkd_flutter/view/menu/edit_menu.dart';
 import 'package:ppkd_flutter/view/menu/menu_screen.dart';
 import 'package:ppkd_flutter/view/reserve/add_reservation.dart';
 import 'package:ppkd_flutter/view/reserve/reservation_screen.dart';
@@ -68,6 +67,7 @@ class _MainScreenState extends State<MainScreen> {
               )
               : null,
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.black,
         currentIndex: _currentIndex,
         selectedItemColor: Colors.brown,
         unselectedItemColor: Colors.grey,
