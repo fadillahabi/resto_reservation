@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:animate_do/animate_do.dart'; // <-- animasi ringan
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -17,23 +18,20 @@ class AddMenu extends StatefulWidget {
 
 class _AddMenuState extends State<AddMenu> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController descController = TextEditingController();
-  final TextEditingController priceController = TextEditingController();
+  final nameController = TextEditingController();
+  final descController = TextEditingController();
+  final priceController = TextEditingController();
   String? base64Image;
   bool isLoading = false;
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
-    final XFile? pickedImage = await picker.pickImage(
-      source: ImageSource.gallery,
-    );
-
-    if (pickedImage != null) {
-      final bytes = await pickedImage.readAsBytes();
+    final image = await picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      final bytes = await image.readAsBytes();
       setState(() {
         base64Image =
-            'data:image/${pickedImage.path.split('.').last};base64,${base64Encode(bytes)}';
+            'data:image/${image.path.split('.').last};base64,${base64Encode(bytes)}';
       });
     }
   }
@@ -49,8 +47,6 @@ class _AddMenuState extends State<AddMenu> {
     setState(() => isLoading = true);
 
     final token = await PreferenceHandlerPM.getToken();
-    print("Token: $token");
-
     final headers = {
       'Authorization': 'Bearer $token',
       'Accept': 'application/json',
@@ -64,16 +60,15 @@ class _AddMenuState extends State<AddMenu> {
       'image': base64Image,
     });
 
-    final response = await http.post(
+    final res = await http.post(
       Uri.parse('${Endpoint.baseUrlApi}/menus'),
       headers: headers,
       body: body,
     );
-    print('Status code: ${response.statusCode}');
-    print('Response body: ${response.body}');
+
     setState(() => isLoading = false);
 
-    if (response.statusCode == 200 || response.statusCode == 201) {
+    if (res.statusCode == 200 || res.statusCode == 201) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Menu berhasil ditambahkan.")),
       );
@@ -81,7 +76,7 @@ class _AddMenuState extends State<AddMenu> {
     } else {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("Gagal: ${response.statusCode}")));
+      ).showSnackBar(SnackBar(content: Text("Gagal: ${res.statusCode}")));
     }
   }
 
@@ -95,89 +90,148 @@ class _AddMenuState extends State<AddMenu> {
         foregroundColor: Colors.white,
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 20),
-              _buildTextField(controller: nameController, label: 'Nama Menu'),
-              const SizedBox(height: 15),
-              _buildTextField(controller: descController, label: 'Deskripsi'),
-              const SizedBox(height: 15),
-              _buildTextField(
-                controller: priceController,
-                label: 'Harga',
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: _pickImage,
-                    icon: const Icon(Icons.image),
-                    label: const Text('Pilih Gambar'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColor.blackField,
-                    ),
+      body: FadeInUp(
+        // <-- animasi elegan
+        duration: const Duration(milliseconds: 500),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Form(
+            key: _formKey,
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.white24, width: 1),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 6),
                   ),
-                  const SizedBox(width: 10),
-                  if (base64Image != null)
-                    const Icon(Icons.check_circle, color: Colors.green),
                 ],
               ),
-              if (base64Image != null) ...[
-                const SizedBox(height: 20),
-                Center(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.memory(
-                      base64Decode(base64Image!.split(',').last),
-                      height: 180,
-                      fit: BoxFit.cover,
+              child: Column(
+                children: [
+                  const Text(
+                    'Form Tambah Menu',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.orangeAccent,
                     ),
                   ),
-                ),
-              ],
-              const SizedBox(height: 30),
-              Center(
-                child: ElevatedButton(
-                  onPressed: isLoading ? null : _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.amber,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 50,
-                      vertical: 15,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                  const SizedBox(height: 30),
+                  _buildField(
+                    controller: nameController,
+                    label: 'Nama Menu',
+                    icon: Icons.fastfood,
                   ),
-                  child:
-                      isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text(
-                            'Simpan Menu',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                            ),
+                  const SizedBox(height: 15),
+                  _buildField(
+                    controller: descController,
+                    label: 'Deskripsi',
+                    icon: Icons.description,
+                  ),
+                  const SizedBox(height: 15),
+                  _buildField(
+                    controller: priceController,
+                    label: 'Harga',
+                    keyboardType: TextInputType.number,
+                    icon: Icons.attach_money,
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: _pickImage,
+                        icon: const Icon(Icons.image_outlined),
+                        label: const Text('Pilih Gambar'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange,
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
                           ),
-                ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      if (base64Image != null)
+                        const Icon(Icons.check_circle, color: Colors.green),
+                    ],
+                  ),
+                  if (base64Image != null) ...[
+                    const SizedBox(height: 20),
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.5),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.memory(
+                          base64Decode(base64Image!.split(',').last),
+                          height: 180,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 30),
+                  ElevatedButton.icon(
+                    onPressed: isLoading ? null : _submit,
+                    icon: const Icon(Icons.save),
+                    label:
+                        isLoading
+                            ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                              ),
+                            )
+                            : const Text(
+                              'Simpan Menu',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orangeAccent,
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 40,
+                        vertical: 14,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  /// Input Field Builder (Reusable)
-  Widget _buildTextField({
+  Widget _buildField({
     required TextEditingController controller,
     required String label,
+    IconData? icon,
     TextInputType? keyboardType,
   }) {
     return TextFormField(
@@ -187,10 +241,12 @@ class _AddMenuState extends State<AddMenu> {
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(color: Colors.white70),
+        prefixIcon:
+            icon != null ? Icon(icon, color: Colors.orangeAccent) : null,
         filled: true,
-        fillColor: AppColor.blackField,
+        fillColor: AppColor.blackMain,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
         ),
       ),

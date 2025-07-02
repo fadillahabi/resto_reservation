@@ -254,31 +254,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
           );
         }
 
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Text(
-            "Belum ada histori reservasi.",
-            style: TextStyle(color: Colors.white70),
-          );
-        }
+        final hasData = snapshot.hasData && snapshot.data!.isNotEmpty;
+        final reservations = snapshot.data ?? [];
 
-        final reservations = snapshot.data!;
         return _buildExpansionTile(
           title: "Histori Pesanan Meja",
           icon: Icons.event_seat,
           children:
-              reservations.map((res) {
-                return ListTile(
-                  leading: const Icon(Icons.chair, color: Colors.white),
-                  title: Text(
-                    "Tamu: ${res.guestCount}",
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  subtitle: Text(
-                    "Tanggal: ${DateFormat('dd MMM yyyy, HH:mm').format(DateTime.parse(res.reservedAt))}",
-                    style: const TextStyle(color: Colors.white70),
-                  ),
-                );
-              }).toList(),
+              hasData
+                  ? reservations.map((res) {
+                    return ListTile(
+                      leading: const Icon(Icons.chair, color: Colors.white),
+                      title: Text(
+                        "Tamu: ${res.guestCount}",
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      subtitle: Text(
+                        "Tanggal: ${DateFormat('dd MMM yyyy, HH:mm').format(DateTime.parse(res.reservedAt))}",
+                        style: const TextStyle(color: Colors.white70),
+                      ),
+                    );
+                  }).toList()
+                  : [
+                    const ListTile(
+                      title: Text(
+                        "Belum ada histori reservasi.",
+                        style: TextStyle(color: Colors.white70),
+                      ),
+                    ),
+                  ],
         );
       },
     );

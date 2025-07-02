@@ -1,3 +1,5 @@
+// ignore_for_file: use_key_in_widget_constructors
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -8,14 +10,12 @@ import 'package:ppkd_flutter/helper/shared_preference.dart';
 import 'package:ppkd_flutter/models/menu_model.dart';
 import 'package:ppkd_flutter/models/user_model.dart';
 import 'package:ppkd_flutter/view/main/profile_screen.dart';
-import 'package:ppkd_flutter/view/menu/add_menu.dart';
 import 'package:ppkd_flutter/view/menu/menu_screen.dart';
 import 'package:ppkd_flutter/view/reserve/add_reservation.dart';
 import 'package:ppkd_flutter/view/reserve/reservation_screen.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
   static const String id = "/main_screen";
 
   @override
@@ -52,24 +52,10 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ),
       ),
-      floatingActionButton:
-          _currentIndex == 0
-              ? FloatingActionButton.extended(
-                onPressed: () async {
-                  final result = await Navigator.pushNamed(context, AddMenu.id);
-                  if (result == true) {
-                    _mainContentKey.currentState?.refreshMenus();
-                  }
-                },
-                icon: const Icon(Icons.add),
-                label: const Text("Tambah Makanan"),
-                backgroundColor: Colors.orange,
-              )
-              : null,
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.black,
         currentIndex: _currentIndex,
-        selectedItemColor: Colors.brown,
+        selectedItemColor: Colors.orange,
         unselectedItemColor: Colors.grey,
         onTap: (index) => setState(() => _currentIndex = index),
         items: const [
@@ -123,7 +109,7 @@ class _MainContentState extends State<MainContent> {
       try {
         return await UserServicePM().getProfile(token);
       } catch (e) {
-        debugPrint('Gagal memuat profile: $e');
+        debugPrint('Gagal memuat profile: \$e');
       }
     }
     return null;
@@ -132,8 +118,8 @@ class _MainContentState extends State<MainContent> {
   Widget _fallbackImage() {
     return Container(
       color: Colors.grey[300],
-      width: 80,
-      height: 80,
+      width: 100,
+      height: 100,
       alignment: Alignment.center,
       child: const Icon(Icons.broken_image, size: 32, color: Colors.grey),
     );
@@ -156,7 +142,6 @@ class _MainContentState extends State<MainContent> {
 
         return ListView(
           children: [
-            // === Profile Header ===
             Container(
               color: Colors.black,
               padding: const EdgeInsets.all(16),
@@ -193,8 +178,6 @@ class _MainContentState extends State<MainContent> {
                 ],
               ),
             ),
-
-            // === Carousel ===
             Stack(
               children: [
                 CarouselSlider.builder(
@@ -229,14 +212,11 @@ class _MainContentState extends State<MainContent> {
                 ),
               ],
             ),
-
-            // === Reservation Banner ===
             Padding(
               padding: const EdgeInsets.all(16),
               child: InkWell(
-                onTap: () {
-                  Navigator.pushNamed(context, AddReservationPage.id);
-                },
+                onTap:
+                    () => Navigator.pushNamed(context, AddReservationPage.id),
                 borderRadius: BorderRadius.circular(16),
                 child: Container(
                   padding: const EdgeInsets.all(16),
@@ -288,8 +268,6 @@ class _MainContentState extends State<MainContent> {
                 ),
               ),
             ),
-
-            // === Menu List Title ===
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
@@ -304,9 +282,8 @@ class _MainContentState extends State<MainContent> {
                     ),
                   ),
                   TextButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, MenuScreen.id);
-                    },
+                    onPressed:
+                        () => Navigator.pushNamed(context, MenuScreen.id),
                     child: const Text(
                       'Lainnya',
                       style: TextStyle(color: Colors.orange),
@@ -315,8 +292,6 @@ class _MainContentState extends State<MainContent> {
                 ],
               ),
             ),
-
-            // === Menu List ===
             FutureBuilder<List<MenuModel>>(
               future: _menusFuture,
               builder: (context, snapshot) {
@@ -343,75 +318,41 @@ class _MainContentState extends State<MainContent> {
                     final imageUrl = menu.imageUrl ?? '';
 
                     return InkWell(
-                      onTap: () {
-                        Navigator.pushNamed(
-                          context,
-                          '/detail_menu',
-                          arguments: menu,
-                        );
-                      },
-
+                      onTap:
+                          () => Navigator.pushNamed(
+                            context,
+                            '/detail_menu',
+                            arguments: menu,
+                          ),
                       child: Container(
                         margin: const EdgeInsets.symmetric(
                           horizontal: 16,
-                          vertical: 6,
+                          vertical: 8,
                         ),
-                        padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
+                          color: Colors.white.withOpacity(0.95),
+                          borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
+                              color: Colors.black.withOpacity(0.08),
+                              blurRadius: 10,
+                              offset: const Offset(0, 6),
                             ),
                           ],
                         ),
                         child: Row(
                           children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    menu.name,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    menu.description,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(color: Colors.grey),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    NumberFormat.currency(
-                                      locale: 'id_ID',
-                                      symbol: 'Rp ',
-                                      decimalDigits: 0,
-                                    ).format(menu.price),
-                                    style: const TextStyle(
-                                      color: Colors.orange,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 12),
                             ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(16),
+                                bottomLeft: Radius.circular(16),
+                              ),
                               child:
                                   imageUrl.isNotEmpty
                                       ? Image.network(
                                         imageUrl,
-                                        width: 80,
-                                        height: 80,
+                                        width: 100,
+                                        height: 100,
                                         fit: BoxFit.cover,
                                         loadingBuilder: (
                                           context,
@@ -420,9 +361,9 @@ class _MainContentState extends State<MainContent> {
                                         ) {
                                           if (loadingProgress == null)
                                             return child;
-                                          return SizedBox(
-                                            width: 80,
-                                            height: 80,
+                                          return const SizedBox(
+                                            width: 100,
+                                            height: 100,
                                             child: Center(
                                               child: CircularProgressIndicator(
                                                 strokeWidth: 2,
@@ -438,6 +379,51 @@ class _MainContentState extends State<MainContent> {
                                             (_, __, ___) => _fallbackImage(),
                                       )
                                       : _fallbackImage(),
+                            ),
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 10,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      menu.name,
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      menu.description,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey,
+                                        fontStyle: FontStyle.italic,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      NumberFormat.currency(
+                                        locale: 'id_ID',
+                                        symbol: 'Rp ',
+                                        decimalDigits: 0,
+                                      ).format(menu.price),
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.deepOrange,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ],
                         ),

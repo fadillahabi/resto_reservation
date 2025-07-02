@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:ppkd_flutter/helper/shared_preference.dart';
+import 'package:ppkd_flutter/view/main/main_screen.dart';
 import 'package:ppkd_flutter/view/open/welcome_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -13,16 +15,6 @@ class _SplashScreenState extends State<SplashScreen>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   bool _assetsPrecached = false;
-
-  void changePage() {
-    Future.delayed(const Duration(seconds: 5), () {
-      Navigator.pushNamedAndRemoveUntil(
-        context,
-        WelcomeScreen.id,
-        (route) => false,
-      );
-    });
-  }
 
   @override
   void initState() {
@@ -39,6 +31,28 @@ class _SplashScreenState extends State<SplashScreen>
 
     _animationController.forward();
     changePage();
+  }
+
+  Future<void> changePage() async {
+    await Future.delayed(const Duration(seconds: 2)); // waktu tunggu
+
+    final token = await PreferenceHandlerPM.getToken();
+
+    if (token != null && token.isNotEmpty) {
+      // Jika token tersedia, langsung ke MainScreen
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        MainScreen.id,
+        (route) => false,
+      );
+    } else {
+      // Jika belum login, arahkan ke WelcomeScreen
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        WelcomeScreen.id,
+        (route) => false,
+      );
+    }
   }
 
   @override

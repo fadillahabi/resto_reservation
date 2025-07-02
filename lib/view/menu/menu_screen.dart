@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:ppkd_flutter/api/menu_api.dart';
 import 'package:ppkd_flutter/constant/app_color.dart';
 import 'package:ppkd_flutter/models/menu_model.dart';
+import 'package:ppkd_flutter/view/menu/add_menu.dart';
 import 'package:ppkd_flutter/view/menu/edit_menu.dart';
 
 class MenuScreen extends StatefulWidget {
@@ -103,8 +104,9 @@ class _MenuScreenState extends State<MenuScreen> {
                                             child,
                                             loadingProgress,
                                           ) {
-                                            if (loadingProgress == null)
+                                            if (loadingProgress == null) {
                                               return child;
+                                            }
                                             return SizedBox(
                                               width: 80,
                                               height: 80,
@@ -167,6 +169,21 @@ class _MenuScreenState extends State<MenuScreen> {
                   },
                 ),
               ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          final result = await Navigator.pushNamed(context, AddMenu.id);
+          if (result == true) {
+            _fetchMenus();
+          }
+        },
+        icon: const Icon(Icons.add, color: Colors.black),
+
+        label: const Text(
+          "Tambah Makanan",
+          style: TextStyle(color: Colors.black),
+        ),
+        backgroundColor: Colors.orange,
+      ),
     );
   }
 }
