@@ -21,7 +21,7 @@ class _SplashScreenState extends State<SplashScreen>
     super.initState();
 
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 3000),
       vsync: this,
     );
 
@@ -34,7 +34,7 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> changePage() async {
-    await Future.delayed(const Duration(seconds: 2)); // waktu tunggu
+    await Future.delayed(const Duration(seconds: 4)); // waktu tunggu
 
     final token = await PreferenceHandlerPM.getToken();
 
